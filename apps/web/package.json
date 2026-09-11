@@ -1,0 +1,37 @@
+{
+  "name": "@astra/web",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test 'lib/**/*.test.ts'"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@xyflow/react": "^12.11.6",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "fflate": "^0.8.3",
+    "lucide-react": "^1.45.0",
+    "next": "^15.5.2",
+    "postcss": "^8.5.28",
+    "radix-ui": "^1.6.7",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.3",
+    "tw-animate-css": "^1.4.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
+    "@types/node": "^22.18.1",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.5.25",
+    "typescript": "^5.9.2"
+  }
+}

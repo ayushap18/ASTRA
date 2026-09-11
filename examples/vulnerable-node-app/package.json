@@ -1,0 +1,11 @@
+{
+  "name": "astra-vulnerable-demo",
+  "private": true,
+  "dependencies": {
+    "astra-demo-client": "1.0.0",
+    "astra-demo-unused": "1.0.0"
+  },
+  "devDependencies": {
+    "astra-demo-builder": "3.0.0"
+  }
+}

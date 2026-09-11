@@ -1,0 +1,461 @@
+{
+  "$defs": {
+    "Edge": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        },
+        "requirement": {
+          "title": "Requirement",
+          "type": "string"
+        },
+        "scope": {
+          "enum": [
+            "runtime",
+            "dev",
+            "optional",
+            "peer"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "reachable": {
+          "title": "Reachable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "requirement",
+        "scope",
+        "reachable"
+      ],
+      "title": "Edge",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "location": {
+          "default": "",
+          "title": "Location",
+          "type": "string"
+        },
+        "sha256": {
+          "default": "",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "source",
+        "summary",
+        "confidence"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "Metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "registry_status": {
+          "enum": [
+            "unknown",
+            "available",
+            "unavailable",
+            "fixture"
+          ],
+          "title": "Registry Status",
+          "type": "string"
+        },
+        "osv_status": {
+          "enum": [
+            "unknown",
+            "available",
+            "unavailable",
+            "fixture"
+          ],
+          "title": "Osv Status",
+          "type": "string"
+        },
+        "latest_version": {
+          "default": "",
+          "title": "Latest Version",
+          "type": "string"
+        },
+        "maintainers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Maintainers",
+          "type": "array"
+        },
+        "published_at": {
+          "default": "",
+          "title": "Published At",
+          "type": "string"
+        },
+        "has_install_script": {
+          "title": "Has Install Script",
+          "type": "boolean"
+        },
+        "latest_published_at": {
+          "default": "",
+          "title": "Latest Published At",
+          "type": "string"
+        },
+        "major_gap": {
+          "default": 0,
+          "title": "Major Gap",
+          "type": "integer"
+        },
+        "minor_gap": {
+          "default": 0,
+          "title": "Minor Gap",
+          "type": "integer"
+        },
+        "patch_gap": {
+          "default": 0,
+          "title": "Patch Gap",
+          "type": "integer"
+        },
+        "days_since_latest_publish": {
+          "default": -1,
+          "title": "Days Since Latest Publish",
+          "type": "integer"
+        },
+        "maintainer_changed": {
+          "default": false,
+          "title": "Maintainer Changed",
+          "type": "boolean"
+        },
+        "previous_maintainers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Previous Maintainers",
+          "type": "array"
+        },
+        "version_jump": {
+          "default": false,
+          "title": "Version Jump",
+          "type": "boolean"
+        },
+        "version_jump_note": {
+          "default": "",
+          "title": "Version Jump Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "registry_status",
+        "osv_status",
+        "maintainers",
+        "has_install_script"
+      ],
+      "title": "Metadata",
+      "type": "object"
+    },
+    "Package": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "purl": {
+          "title": "Purl",
+          "type": "string"
+        },
+        "ecosystem": {
+          "const": "npm",
+          "title": "Ecosystem",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "install_path": {
+          "title": "Install Path",
+          "type": "string"
+        },
+        "direct": {
+          "title": "Direct",
+          "type": "boolean"
+        },
+        "depth": {
+          "title": "Depth",
+          "type": "integer"
+        },
+        "dev": {
+          "title": "Dev",
+          "type": "boolean"
+        },
+        "license": {
+          "default": "",
+          "title": "License",
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/$defs/Metadata"
+        },
+        "vulnerabilities": {
+          "items": {
+            "$ref": "#/$defs/Vulnerability"
+          },
+          "title": "Vulnerabilities",
+          "type": "array"
+        },
+        "install_scripts": {
+          "items": {
+            "$ref": "#/$defs/Script"
+          },
+          "title": "Install Scripts",
+          "type": "array"
+        },
+        "reachability": {
+          "$ref": "#/$defs/Reachability"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "risk": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Risk"
+        }
+      },
+      "required": [
+        "id",
+        "purl",
+        "ecosystem",
+        "name",
+        "version",
+        "install_path",
+        "direct",
+        "depth",
+        "dev",
+        "metadata",
+        "vulnerabilities",
+        "install_scripts",
+        "reachability",
+        "evidence_ids"
+      ],
+      "title": "Package",
+      "type": "object"
+    },
+    "Reachability": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "maximum": 4,
+          "minimum": 0,
+          "title": "Level",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "unknown",
+            "import_observed",
+            "module_observed",
+            "function_observed",
+            "reachable"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "level",
+        "status",
+        "evidence_ids"
+      ],
+      "title": "Reachability",
+      "type": "object"
+    },
+    "Script": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Capabilities",
+          "type": "array"
+        },
+        "evidence_id": {
+          "title": "Evidence Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "capabilities",
+        "evidence_id"
+      ],
+      "title": "Script",
+      "type": "object"
+    },
+    "Vulnerability": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low",
+            "unknown"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "fixed_versions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fixed Versions",
+          "type": "array"
+        },
+        "evidence_id": {
+          "title": "Evidence Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "summary",
+        "severity",
+        "fixed_versions",
+        "evidence_id"
+      ],
+      "title": "Vulnerability",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "root_id": {
+      "title": "Root Id",
+      "type": "string"
+    },
+    "project_license": {
+      "default": "",
+      "title": "Project License",
+      "type": "string"
+    },
+    "packages": {
+      "items": {
+        "$ref": "#/$defs/Package"
+      },
+      "maxItems": 5000,
+      "title": "Packages",
+      "type": "array"
+    },
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/Edge"
+      },
+      "maxItems": 50000,
+      "title": "Edges",
+      "type": "array"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/Evidence"
+      },
+      "maxItems": 100000,
+      "title": "Evidence",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "root_id",
+    "packages",
+    "edges",
+    "evidence",
+    "warnings"
+  ],
+  "title": "Graph",
+  "type": "object"
+}

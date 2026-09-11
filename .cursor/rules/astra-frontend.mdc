@@ -1,0 +1,24 @@
+---
+description: Astra investigation UI — Figma editorial system, evidence-first workflows, no AI slop
+globs: apps/web/**/*.{ts,tsx,css,md}
+alwaysApply: false
+---
+
+# Astra frontend
+
+Follow `apps/web/design.md`. Chrome is black/white. Story sections use one pastel color block (`lime` intake, `cream` graph, `coral` attack, `lilac` timeline, `mint` remediate, `navy` failure). Return to white canvas between blocks.
+
+## Buttons
+
+- Text CTAs are pills (`border-radius: 50px`). Icon buttons are 40px circles.
+- Primary: black fill, white text. Secondary: white fill, black text, no border.
+- Magenta only for optional Sarvam explain, once per page.
+- No square buttons, gradients, glow, or drop shadows on color blocks.
+
+## Product truth
+
+- Package `id` is the node key; `purl` is version identity. Never collapse instances by name.
+- Remediation is a proposal (`verified: false`). Timeline is unavailable until history exists.
+- Unknown is unknown. Do not use mid-gray body copy; hierarchy is Inter weight.
+- JetBrains Mono is eyebrows/captions only, uppercase.
+- Fetch via `/api/v1/*` (Next proxy). Never put `ASTRA_API_TOKEN` in client bundles or query strings.

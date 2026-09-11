@@ -1,0 +1,1016 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Astra Intelligence",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/ready": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_ready_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reachability": {
+      "post": {
+        "summary": "Reachability",
+        "operationId": "reachability_v1_reachability_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/analyze": {
+      "post": {
+        "summary": "Analysis",
+        "operationId": "analysis_v1_analyze_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalysisRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/simulate": {
+      "post": {
+        "summary": "Simulation",
+        "operationId": "simulation_v1_simulate_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/remediation": {
+      "post": {
+        "summary": "Remediation",
+        "operationId": "remediation_v1_remediation_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemediationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/explain": {
+      "post": {
+        "summary": "Explanation",
+        "operationId": "explanation_v1_explain_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExplainRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalysisRequest": {
+        "properties": {
+          "graph": {
+            "$ref": "#/components/schemas/Graph"
+          },
+          "denied_licenses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Denied Licenses"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "graph"
+        ],
+        "title": "AnalysisRequest"
+      },
+      "Edge": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "requirement": {
+            "type": "string",
+            "title": "Requirement"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "runtime",
+              "dev",
+              "optional",
+              "peer"
+            ],
+            "title": "Scope"
+          },
+          "reachable": {
+            "type": "boolean",
+            "title": "Reachable"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source",
+          "target",
+          "requirement",
+          "scope",
+          "reachable"
+        ],
+        "title": "Edge"
+      },
+      "Evidence": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "location": {
+            "type": "string",
+            "title": "Location",
+            "default": ""
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256",
+            "default": ""
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "source",
+          "summary",
+          "confidence"
+        ],
+        "title": "Evidence"
+      },
+      "ExplainRequest": {
+        "properties": {
+          "graph": {
+            "$ref": "#/components/schemas/Graph"
+          },
+          "denied_licenses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Denied Licenses"
+          },
+          "package_id": {
+            "type": "string",
+            "title": "Package Id"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "hi",
+              "bn",
+              "ta",
+              "te",
+              "mr",
+              "gu",
+              "kn",
+              "ml",
+              "pa",
+              "or"
+            ],
+            "title": "Language",
+            "default": "en"
+          },
+          "use_ai": {
+            "type": "boolean",
+            "title": "Use Ai",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "graph",
+          "package_id"
+        ],
+        "title": "ExplainRequest"
+      },
+      "Graph": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "1.0",
+            "title": "Schema Version"
+          },
+          "root_id": {
+            "type": "string",
+            "title": "Root Id"
+          },
+          "project_license": {
+            "type": "string",
+            "title": "Project License",
+            "default": ""
+          },
+          "packages": {
+            "items": {
+              "$ref": "#/components/schemas/Package"
+            },
+            "type": "array",
+            "maxItems": 5000,
+            "title": "Packages"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/Edge"
+            },
+            "type": "array",
+            "maxItems": 50000,
+            "title": "Edges"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "maxItems": 100000,
+            "title": "Evidence"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "schema_version",
+          "root_id",
+          "packages",
+          "edges",
+          "evidence",
+          "warnings"
+        ],
+        "title": "Graph"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Metadata": {
+        "properties": {
+          "registry_status": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "available",
+              "unavailable",
+              "fixture"
+            ],
+            "title": "Registry Status"
+          },
+          "osv_status": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "available",
+              "unavailable",
+              "fixture"
+            ],
+            "title": "Osv Status"
+          },
+          "latest_version": {
+            "type": "string",
+            "title": "Latest Version",
+            "default": ""
+          },
+          "maintainers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Maintainers"
+          },
+          "published_at": {
+            "type": "string",
+            "title": "Published At",
+            "default": ""
+          },
+          "has_install_script": {
+            "type": "boolean",
+            "title": "Has Install Script"
+          },
+          "latest_published_at": {
+            "type": "string",
+            "title": "Latest Published At",
+            "default": ""
+          },
+          "major_gap": {
+            "type": "integer",
+            "title": "Major Gap",
+            "default": 0
+          },
+          "minor_gap": {
+            "type": "integer",
+            "title": "Minor Gap",
+            "default": 0
+          },
+          "patch_gap": {
+            "type": "integer",
+            "title": "Patch Gap",
+            "default": 0
+          },
+          "days_since_latest_publish": {
+            "type": "integer",
+            "title": "Days Since Latest Publish",
+            "default": -1
+          },
+          "maintainer_changed": {
+            "type": "boolean",
+            "title": "Maintainer Changed",
+            "default": false
+          },
+          "previous_maintainers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Previous Maintainers"
+          },
+          "version_jump": {
+            "type": "boolean",
+            "title": "Version Jump",
+            "default": false
+          },
+          "version_jump_note": {
+            "type": "string",
+            "title": "Version Jump Note",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "registry_status",
+          "osv_status",
+          "maintainers",
+          "has_install_script"
+        ],
+        "title": "Metadata"
+      },
+      "Package": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "purl": {
+            "type": "string",
+            "title": "Purl"
+          },
+          "ecosystem": {
+            "type": "string",
+            "const": "npm",
+            "title": "Ecosystem"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "install_path": {
+            "type": "string",
+            "title": "Install Path"
+          },
+          "direct": {
+            "type": "boolean",
+            "title": "Direct"
+          },
+          "depth": {
+            "type": "integer",
+            "title": "Depth"
+          },
+          "dev": {
+            "type": "boolean",
+            "title": "Dev"
+          },
+          "license": {
+            "type": "string",
+            "title": "License",
+            "default": ""
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          },
+          "vulnerabilities": {
+            "items": {
+              "$ref": "#/components/schemas/Vulnerability"
+            },
+            "type": "array",
+            "title": "Vulnerabilities"
+          },
+          "install_scripts": {
+            "items": {
+              "$ref": "#/components/schemas/Script"
+            },
+            "type": "array",
+            "title": "Install Scripts"
+          },
+          "reachability": {
+            "$ref": "#/components/schemas/Reachability"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Ids"
+          },
+          "risk": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "purl",
+          "ecosystem",
+          "name",
+          "version",
+          "install_path",
+          "direct",
+          "depth",
+          "dev",
+          "metadata",
+          "vulnerabilities",
+          "install_scripts",
+          "reachability",
+          "evidence_ids"
+        ],
+        "title": "Package"
+      },
+      "Reachability": {
+        "properties": {
+          "level": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 0.0,
+            "title": "Level"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "import_observed",
+              "module_observed",
+              "function_observed",
+              "reachable"
+            ],
+            "title": "Status"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "level",
+          "status",
+          "evidence_ids"
+        ],
+        "title": "Reachability"
+      },
+      "RemediationRequest": {
+        "properties": {
+          "graph": {
+            "$ref": "#/components/schemas/Graph"
+          },
+          "denied_licenses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Denied Licenses"
+          },
+          "max_changes": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Max Changes",
+            "default": 10
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "graph"
+        ],
+        "title": "RemediationRequest"
+      },
+      "Script": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Capabilities"
+          },
+          "evidence_id": {
+            "type": "string",
+            "title": "Evidence Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "capabilities",
+          "evidence_id"
+        ],
+        "title": "Script"
+      },
+      "SimulationRequest": {
+        "properties": {
+          "graph": {
+            "$ref": "#/components/schemas/Graph"
+          },
+          "denied_licenses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Denied Licenses"
+          },
+          "package_id": {
+            "type": "string",
+            "title": "Package Id"
+          },
+          "ci_install": {
+            "type": "boolean",
+            "title": "Ci Install",
+            "default": false
+          },
+          "lifecycle_scripts_enabled": {
+            "type": "boolean",
+            "title": "Lifecycle Scripts Enabled",
+            "default": false
+          },
+          "credential_categories": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "repository_token",
+                "cloud_credentials",
+                "database"
+              ]
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Credential Categories"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "graph",
+          "package_id"
+        ],
+        "title": "SimulationRequest"
+      },
+      "SourceRequest": {
+        "properties": {
+          "graph": {
+            "$ref": "#/components/schemas/Graph"
+          },
+          "denied_licenses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Denied Licenses"
+          },
+          "sources": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "maxProperties": 500,
+            "title": "Sources"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "graph"
+        ],
+        "title": "SourceRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "Vulnerability": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "unknown"
+            ],
+            "title": "Severity"
+          },
+          "fixed_versions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fixed Versions"
+          },
+          "evidence_id": {
+            "type": "string",
+            "title": "Evidence Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "summary",
+          "severity",
+          "fixed_versions",
+          "evidence_id"
+        ],
+        "title": "Vulnerability"
+      }
+    }
+  }
+}

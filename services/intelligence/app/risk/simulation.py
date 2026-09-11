@@ -1,0 +1,70 @@
+import math
+from collections import deque
+
+from app.models import SimulationRequest
+from app.risk.engine import topology, walk
+
+
+def simulate(request: SimulationRequest) -> dict:
+    graph = request.graph
+    package = next((p for p in graph.packages if p.id == request.package_id), None)
+    if package is None:
+        raise KeyError(request.package_id)
+    _, reverse = topology(graph)
+    ancestors = walk(package.id, reverse)
+    paths, queue = [], deque([(package.id, [package.id])])
+    visited = {package.id}
+    while queue:
+        current, path = queue.popleft()
+        for parent in sorted(reverse.get(current, ())):
+            if parent not in visited:
+                visited.add(parent)
+                next_path = path + [parent]
+                paths.append(next_path)
+                queue.append((parent, next_path))
+    script = bool(package.install_scripts or package.metadata.has_install_script)
+    ci_exposure = script and request.ci_install and request.lifecycle_scripts_enabled
+    capabilities = {c for s in package.install_scripts for c in s.capabilities}
+    factors = {
+        "centrality": 1 + len(ancestors - {graph.root_id}) / max(1, len(graph.packages)),
+        "observed_import": 1.5 if package.reachability.level >= 1 else 1,
+        "runtime_privilege": 1,  # Unknown, neutral assumption; no runtime instrumentation yet.
+        "ci_exposure": 2 if ci_exposure else 1,
+        "dependant_count": 1 + math.log2(1 + len(ancestors)),
+        "script_capabilities": 1 + len(capabilities) / 4 if script else 1,
+    }
+    radius = round(100 * (1 - math.exp(-math.prod(factors.values()) / 10)))
+    propagation = []
+    if ci_exposure:
+        propagation = [
+            {"source": package.id, "target": "asset:lifecycle-script"},
+            {"source": "asset:lifecycle-script", "target": "asset:ci-runner"},
+        ]
+        propagation += [
+            {"source": "asset:ci-runner", "target": f"category:{c}"}
+            for c in sorted(set(request.credential_categories))
+        ]
+    return {
+        "origin": package.id,
+        "toxicity_radius": radius,
+        "model_version": "atr-experimental-v1",
+        "factors": factors,
+        "affected_packages": sorted(ancestors - {graph.root_id}),
+        "dependency_paths": paths,
+        "path_semantics": "one shortest reverse dependency path per ancestor",
+        "propagation": propagation,
+        "secret_exposure_potential": {
+            c: "high" if ci_exposure else "unknown" for c in request.credential_categories
+        },
+        "assumptions": {
+            "ci_install": request.ci_install,
+            "lifecycle_scripts_enabled": request.lifecycle_scripts_enabled,
+            "credential_categories": request.credential_categories,
+        },
+        "evidence_ids": package.evidence_ids + [s.evidence_id for s in package.install_scripts],
+        "limitations": [
+            "Hypothetical compromise model; no scripts are executed or secrets inspected.",
+            "Dependency ancestry is not an execution path.",
+            "ATR is an experimental ranking heuristic, not a calibrated probability.",
+        ],
+    }

@@ -1,0 +1,35 @@
+# Dependencies & Virtual Environments
+node_modules/
+.venv/
+venv/
+env/
+
+# Build artifacts & binaries
+bin/
+.next/
+dist/
+build/
+*.tsbuildinfo
+
+# Python & testing caches
+.ruff_cache/
+.pytest_cache/
+*.pyc
+__pycache__/
+
+# OS & Editor files
+.DS_Store
+*.swp
+*.swo
+.claude/settings.local.json
+.superpowers/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Tooling & Temporary files
+.netlify/
+.playwright-mcp/
+astra-home.yml

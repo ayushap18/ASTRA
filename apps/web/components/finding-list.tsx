@@ -46,7 +46,7 @@ export function FindingList({
           <button
             key={finding.id}
             type="button"
-            className={`finding finding-button${finding.id === selectedId ? " selected" : ""}`}
+            className={`finding finding-button sev-${finding.severity}${finding.id === selectedId ? " selected" : ""}`}
             aria-current={finding.id === selectedId ? "true" : undefined}
             onClick={() => focus(finding)}
           >

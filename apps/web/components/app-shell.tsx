@@ -6,7 +6,12 @@ import { useEffect, useState } from "react";
 import { VoiceControl } from "@/components/voice-control";
 import { liveScans, type ScanSummary } from "@/lib/dashboard";
 
-function statusTone(status: string) {
+// One block colour per state. The rail reads as sticky notes on a dark board,
+// so status is legible before any text is read.
+const TONES = ["running", "queued", "partial", "failed", "done"] as const;
+type Tone = (typeof TONES)[number];
+
+function statusTone(status: string): Tone {
   if (status === "running") return "running";
   if (status === "queued") return "queued";
   if (status === "failed") return "failed";
@@ -53,12 +58,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         Skip to content
       </a>
       <aside className={`rail ${open ? "open" : ""}`}>
-        <Link href="/" className="brand-mark" onClick={() => setOpen(false)}>
-          ASTRA
-        </Link>
-        <p className="caption">Operator console</p>
+        <div className="rail-head">
+          <Link href="/" className="brand-mark" onClick={() => setOpen(false)}>
+            ASTRA
+          </Link>
+          <p className="caption rail-sub">Operator console</p>
+        </div>
+        <div className="rail-tally">
+          {TONES.map((tone) => {
+            const count = scans.filter((scan) => statusTone(scan.status) === tone).length;
+            return (
+              <span key={tone} className={`tally tone-${tone}`} title={`${count} ${tone}`}>
+                <span className="mono-id">{count}</span>
+                <span className="caption">{tone}</span>
+              </span>
+            );
+          })}
+        </div>
         <nav className="scan-nav" aria-label="Scans">
-          {scans.length === 0 ? <p className="caption">No scans yet</p> : null}
+          <p className="caption rail-label">Scans</p>
+          {scans.length === 0 ? <p className="caption rail-sub">No scans yet</p> : null}
           {scans.map((scan) => {
             const href = `/scans/${scan.id}`;
             const current = path.startsWith(href);
@@ -66,12 +85,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={scan.id}
                 href={href}
-                className="scan-link"
+                className={`scan-link tone-${statusTone(scan.status)}`}
                 aria-current={current ? "page" : undefined}
                 onClick={() => setOpen(false)}
               >
-                <span className={`status-dot ${statusTone(scan.status)}`} />
-                <span>
+                <span className="scan-spine" aria-hidden="true" />
+                <span className="scan-body">
                   <span className="mono-id">{scan.id.slice(0, 12)}</span>
                   <span className="caption">
                     {scan.status} · {scan.source}
@@ -84,7 +103,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
       <div className="console-main">
         <header className="console-bar">
-          <button type="button" className="pill secondary menu" onClick={() => setOpen((v) => !v)}>
+          <button type="button" className="pill secondary sm menu" onClick={() => setOpen((v) => !v)}>
             Scans
           </button>
           <span className="status-badge">
@@ -95,7 +114,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {running} running · {queued} queued · {scans.length} total
           </span>
           <VoiceControl scans={scans} />
-          <Link href="/#scan" className="pill primary">
+          <Link href="/#scan" className="pill primary sm">
             + Scan
           </Link>
         </header>

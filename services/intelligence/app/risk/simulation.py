@@ -1,4 +1,3 @@
-import math
 from collections import deque
 
 from app.models import SimulationRequest
@@ -23,17 +22,24 @@ def simulate(request: SimulationRequest) -> dict:
                 paths.append(next_path)
                 queue.append((parent, next_path))
     script = bool(package.install_scripts or package.metadata.has_install_script)
-    ci_exposure = script and request.ci_install and request.lifecycle_scripts_enabled
+    # A hypothetically compromised release can add a lifecycle script, so CI exposure does not
+    # require one to exist today; an observed script only raises the weight.
+    ci_exposure = request.ci_install and request.lifecycle_scripts_enabled
     capabilities = {c for s in package.install_scripts for c in s.capabilities}
+    affected = ancestors - {graph.root_id}
+    installed = max(1, sum(p.id != graph.root_id for p in graph.packages) - 1)
+    # Coverage is the literal blast radius: the share of the install downstream of
+    # this instance. Exposure only scales that share; it can never invent reach.
     factors = {
-        "centrality": 1 + len(ancestors - {graph.root_id}) / max(1, len(graph.packages)),
+        "coverage": len(affected) / installed,
         "observed_import": 1.5 if package.reachability.level >= 1 else 1,
-        "runtime_privilege": 1,  # Unknown, neutral assumption; no runtime instrumentation yet.
-        "ci_exposure": 2 if ci_exposure else 1,
-        "dependant_count": 1 + math.log2(1 + len(ancestors)),
+        "ci_exposure": (2 if script else 1.5) if ci_exposure else 1,
         "script_capabilities": 1 + len(capabilities) / 4 if script else 1,
     }
-    radius = round(100 * (1 - math.exp(-math.prod(factors.values()) / 10)))
+    exposure = factors["observed_import"] * factors["ci_exposure"] * factors["script_capabilities"]
+    # ponytail: cube root is a ranking curve, not a calibrated probability. It keeps
+    # small shares distinguishable; replace it once real incident data exists.
+    radius = round(100 * factors["coverage"] ** (1 / 3) * (0.45 + 0.55 * (exposure - 1) / 5))
     propagation = []
     if ci_exposure:
         propagation = [
@@ -49,22 +55,26 @@ def simulate(request: SimulationRequest) -> dict:
         "toxicity_radius": radius,
         "model_version": "atr-experimental-v1",
         "factors": factors,
-        "affected_packages": sorted(ancestors - {graph.root_id}),
+        "affected_packages": sorted(affected),
+        "installed_packages": installed,
         "dependency_paths": paths,
         "path_semantics": "one shortest reverse dependency path per ancestor",
         "propagation": propagation,
         "secret_exposure_potential": {
-            c: "high" if ci_exposure else "unknown" for c in request.credential_categories
+            c: ("high" if script else "possible") if ci_exposure else "unknown"
+            for c in request.credential_categories
         },
         "assumptions": {
             "ci_install": request.ci_install,
             "lifecycle_scripts_enabled": request.lifecycle_scripts_enabled,
             "credential_categories": request.credential_categories,
+            "observed_install_script": script,
         },
         "evidence_ids": package.evidence_ids + [s.evidence_id for s in package.install_scripts],
         "limitations": [
             "Hypothetical compromise model; no scripts are executed or secrets inspected.",
             "Dependency ancestry is not an execution path.",
             "ATR is an experimental ranking heuristic, not a calibrated probability.",
+            "Runtime privilege is not modelled; no runtime instrumentation yet.",
         ],
     }

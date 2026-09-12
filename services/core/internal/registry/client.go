@@ -8,8 +8,10 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -23,8 +25,25 @@ type Client struct {
 	NPMURL, OSVURL string
 }
 
+// Workers bounds registry fan-out. The default transport keeps only 2 idle
+// connections per host, so every worker beyond that pays a fresh TLS handshake
+// per request; the pool below is sized to the worker count.
+func Workers() int {
+	if n, err := strconv.Atoi(os.Getenv("ASTRA_REGISTRY_WORKERS")); err == nil && n >= 1 && n <= 64 {
+		return n
+	}
+	return 16
+}
+
 func New() *Client {
-	return &Client{HTTP: &http.Client{Timeout: 15 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}, NPMURL: "https://registry.npmjs.org", OSVURL: "https://api.osv.dev/v1/query"}
+	workers := Workers()
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.MaxIdleConns = workers * 4
+	transport.MaxIdleConnsPerHost = workers
+	transport.MaxConnsPerHost = workers
+	transport.IdleConnTimeout = 90 * time.Second
+	transport.ForceAttemptHTTP2 = true
+	return &Client{HTTP: &http.Client{Timeout: 15 * time.Second, Transport: transport, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}, NPMURL: "https://registry.npmjs.org", OSVURL: "https://api.osv.dev/v1/query"}
 }
 
 func (c *Client) request(ctx context.Context, method, address string, payload any, out any) ([]byte, error) {
@@ -152,7 +171,20 @@ func (c *Client) enrich(ctx context.Context, p model.Package, pk *packument) (mo
 		} `json:"maintainers"`
 	}
 	address := c.NPMURL + "/" + url.PathEscape(p.Name) + "/" + url.PathEscape(p.Version)
-	raw, err := c.request(ctx, http.MethodGet, address, nil, &metadata)
+	var raw []byte
+	var err error
+	// The packument already carries every version, so the exact-version request is
+	// only made when this version is missing from it. That halves registry traffic.
+	if version, ok := packumentVersion(pk, p.Version); ok {
+		address = c.NPMURL + "/" + url.PathEscape(p.Name)
+		raw = pk.raw
+		metadata.Name, metadata.Version = p.Name, p.Version
+		metadata.License = version.License
+		metadata.Scripts = version.Scripts
+		metadata.Maintainers = version.Maintainers
+	} else {
+		raw, err = c.request(ctx, http.MethodGet, address, nil, &metadata)
+	}
 	if err != nil || metadata.Name != p.Name || metadata.Version != p.Version {
 		p.Metadata.RegistryStatus = "unavailable"
 		warnings = append(warnings, "Registry metadata unavailable for "+p.PURL)
@@ -164,7 +196,11 @@ func (c *Client) enrich(ctx context.Context, p model.Package, pk *packument) (mo
 		}
 		sort.Strings(p.Metadata.Maintainers)
 		id := "ev:registry:" + resolver.Hash([]byte(p.ID))[:20]
-		evidence = append(evidence, model.Evidence{ID: id, Kind: "registry_metadata", Source: address, SHA256: resolver.Hash(raw), Summary: "Exact-version npm metadata; current maintainers are not ownership history.", Confidence: 0.9})
+		summary := "Exact-version npm metadata; current maintainers are not ownership history."
+		if address != c.NPMURL+"/"+url.PathEscape(p.Name)+"/"+url.PathEscape(p.Version) {
+			summary = "Installed-version entry read from the npm packument; current maintainers are not ownership history."
+		}
+		evidence = append(evidence, model.Evidence{ID: id, Kind: "registry_metadata", Source: address, SHA256: resolver.Hash(raw), Summary: summary, Confidence: 0.9})
 		p.EvidenceIDs = append(p.EvidenceIDs, id)
 		evidence = append(evidence, AnalyzeScripts(&p, metadata.Scripts, address)...)
 	}
@@ -302,7 +338,11 @@ func (c *Client) Enrich(ctx context.Context, g *model.Graph) {
 func parallel(n int, fn func(int)) {
 	jobs := make(chan int)
 	var wg sync.WaitGroup
-	for worker := 0; worker < 8; worker++ {
+	workers := Workers()
+	if n < workers {
+		workers = n
+	}
+	for worker := 0; worker < workers; worker++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()

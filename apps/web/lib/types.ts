@@ -135,6 +135,7 @@ export type Simulation = {
   model_version: string;
   factors: Record<string, number>;
   affected_packages: string[];
+  installed_packages: number;
   dependency_paths: string[][];
   path_semantics: string;
   propagation: { source: string; target: string }[];
@@ -143,6 +144,7 @@ export type Simulation = {
     ci_install: boolean;
     lifecycle_scripts_enabled: boolean;
     credential_categories: string[];
+    observed_install_script: boolean;
   };
   evidence_ids: string[];
   limitations: string[];

@@ -98,29 +98,59 @@ export function AttackForm({
         </Button>
       </form>
       {result ? (
-        <section className="stack">
+        <section className="stack atr">
           <p className="eyebrow">Experimental ATR</p>
-          <p className="display">{result.toxicity_radius}</p>
+          <div className="atr-head">
+            <p className="display">{result.toxicity_radius}</p>
+            <span className="bar-track" aria-hidden="true">
+              <span className="bar-fill" style={{ width: `${result.toxicity_radius}%` }} />
+            </span>
+          </div>
           <p className="body-lg">
-            Ancestry is not execution. {result.path_semantics}. Model {result.model_version}.
+            {result.affected_packages.length} of {result.installed_packages} installed packages are downstream of{" "}
+            {result.origin}
+            {result.assumptions.observed_install_script ? ", which ships an install script" : ""}.
           </p>
-          <p className="caption">evidence {result.evidence_ids.join(" ")}</p>
-          {result.limitations.map((line) => (
-            <p key={line} className="caption">
-              {line}
-            </p>
-          ))}
+          <div className="bars">
+            {Object.entries(result.factors).map(([name, value]) => (
+              <div key={name} className="bar-row">
+                <span className="caption">{name.replace(/_/g, " ")}</span>
+                <span className="bar-track" aria-hidden="true">
+                  <span className="bar-fill" style={{ width: `${Math.min(100, value * 50)}%` }} />
+                </span>
+                <span className="mono-id">{value.toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+          <dl className="exposure">
+            {Object.entries(result.secret_exposure_potential).map(([category, level]) => (
+              <div key={category}>
+                <dt className="caption">{category.replace(/_/g, " ")}</dt>
+                <dd className={`mono-id level-${level}`}>{level}</dd>
+              </div>
+            ))}
+          </dl>
           {result.propagation.length ? (
-            <div>
+            <div className="scroll-list">
               {result.propagation.map((edge) => (
-                <p key={`${edge.source}->${edge.target}`} className="caption">
+                <p key={`${edge.source}->${edge.target}`} className="mono-id">
                   {edge.source} → {edge.target}
                 </p>
               ))}
             </div>
           ) : (
-            <p className="body-lg">No CI credential propagation under these assumptions.</p>
+            <p className="body">No CI credential propagation under these assumptions.</p>
           )}
+          <div className="stack-sm">
+            {result.limitations.map((line) => (
+              <p key={line} className="caption">
+                {line}
+              </p>
+            ))}
+            <p className="caption">
+              {result.path_semantics}. Model {result.model_version}. Evidence {result.evidence_ids.join(" ")}
+            </p>
+          </div>
         </section>
       ) : null}
     </>

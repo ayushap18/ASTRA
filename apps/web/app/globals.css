@@ -976,3 +976,50 @@ select {
   }
 }
 }
+
+/* Long evidence lists stay scannable without pushing the controls below the fold. */
+.scroll-list {
+  display: grid;
+  gap: var(--space-lg);
+  max-height: 60vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: var(--space-xs);
+}
+
+@media (max-width: 720px) {
+  .scroll-list {
+    max-height: 70vh;
+  }
+}
+
+/* Simulation result: the score reads as a measurement, not a headline. */
+.atr {
+  border-top: 2px solid var(--ink);
+  padding-top: var(--space-lg);
+}
+.atr-head {
+  display: grid;
+  gap: var(--space-xs);
+}
+.atr-head .bar-track {
+  height: 12px;
+}
+.exposure {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-sm);
+  margin: 0;
+}
+.exposure dd {
+  margin: 0;
+}
+.level-high {
+  font-weight: 700;
+}
+.level-possible {
+  font-weight: 600;
+}
+.level-unknown {
+  opacity: 0.6;
+}

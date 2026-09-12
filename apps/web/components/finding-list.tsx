@@ -41,21 +41,23 @@ export function FindingList({
 
   return (
     <div className="stack">
-      {findings.map((finding) => (
-        <button
-          key={finding.id}
-          type="button"
-          className={`finding finding-button${finding.id === selectedId ? " selected" : ""}`}
-          aria-current={finding.id === selectedId ? "true" : undefined}
-          onClick={() => focus(finding)}
-        >
-          <p className="caption">
-            {finding.kind} · {finding.severity}
-          </p>
-          <p className="body-lg">{finding.title}</p>
-          <p className="caption">evidence {finding.evidence_ids.join(" ")}</p>
-        </button>
-      ))}
+      <div className="scroll-list">
+        {findings.map((finding) => (
+          <button
+            key={finding.id}
+            type="button"
+            className={`finding finding-button${finding.id === selectedId ? " selected" : ""}`}
+            aria-current={finding.id === selectedId ? "true" : undefined}
+            onClick={() => focus(finding)}
+          >
+            <p className="caption">
+              {finding.kind} · {finding.severity}
+            </p>
+            <p className="body-lg">{finding.title}</p>
+            <p className="caption">evidence {finding.evidence_ids.join(" ")}</p>
+          </button>
+        ))}
+      </div>
       {selected ? (
         <>
           <EvidenceStrip records={records} />

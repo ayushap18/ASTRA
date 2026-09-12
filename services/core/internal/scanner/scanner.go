@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"os"
 	"time"
 
 	gitinput "github.com/astra-security/astra/services/core/internal/git"
@@ -22,8 +23,21 @@ type Runner struct {
 	Verifier     *sandbox.Client
 }
 
+// budget returns a duration from the environment, clamped to keep a stuck scan
+// from holding a worker slot forever.
+func budget(key string, fallback, max time.Duration) time.Duration {
+	d, err := time.ParseDuration(os.Getenv(key))
+	if err != nil || d <= 0 {
+		return fallback
+	}
+	if d > max {
+		return max
+	}
+	return d
+}
+
 func (r *Runner) Run(ctx context.Context, id string, input model.ScanInput) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, budget("ASTRA_SCAN_TIMEOUT", 5*time.Minute, 30*time.Minute))
 	defer cancel()
 	scan, err := r.Store.Get(ctx, id)
 	if err != nil {
@@ -55,7 +69,7 @@ func (r *Runner) Run(ctx context.Context, id string, input model.ScanInput) {
 	}
 	switch input.Source {
 	case "github":
-		fetchCtx, done := context.WithTimeout(ctx, 90*time.Second)
+		fetchCtx, done := context.WithTimeout(ctx, budget("ASTRA_FETCH_TIMEOUT", 90*time.Second, 10*time.Minute))
 		input, err = gitinput.Fetch(fetchCtx, input)
 		done()
 		if err != nil {
@@ -100,6 +114,9 @@ func (r *Runner) Run(ctx context.Context, id string, input model.ScanInput) {
 	}
 	if len(input.Sources) == 0 {
 		graph.Warnings = append(graph.Warnings, "No source files supplied; import reachability remains unknown")
+	}
+	if input.SourceWarning != "" {
+		graph.Warnings = append(graph.Warnings, input.SourceWarning)
 	}
 	var reached model.Graph
 	if err = r.Intelligence.Call(ctx, "/v1/reachability", map[string]any{"graph": graph, "sources": input.Sources}, &reached); err != nil {

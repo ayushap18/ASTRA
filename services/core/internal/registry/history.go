@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strconv"
@@ -12,17 +13,36 @@ import (
 
 // packument is the subset of https://registry.npmjs.org/<name> needed for history-derived fields.
 type packument struct {
-	DistTags map[string]string `json:"dist-tags"`
-	Time     map[string]string `json:"time"`
-	Versions map[string]struct {
-		Maintainers []struct {
-			Name string `json:"name"`
-		} `json:"maintainers"`
-		NPMUser struct {
-			Name string `json:"name"`
-		} `json:"_npmUser"`
-	} `json:"versions"`
-	raw []byte
+	DistTags map[string]string       `json:"dist-tags"`
+	Time     map[string]string       `json:"time"`
+	Versions map[string]versionEntry `json:"versions"`
+	raw      []byte
+}
+
+type versionEntry struct {
+	Maintainers []struct {
+		Name string `json:"name"`
+	} `json:"maintainers"`
+	NPMUser struct {
+		Name string `json:"name"`
+	} `json:"_npmUser"`
+	// License and Scripts let enrich read the installed version straight from the
+	// packument instead of a second per-package request.
+	License json.RawMessage   `json:"license"`
+	Scripts map[string]string `json:"scripts"`
+}
+
+// packumentVersion reports the packument entry for an exact version. A missing
+// entry means the caller must fall back to the exact-version request.
+func packumentVersion(pk *packument, version string) (versionEntry, bool) {
+	if pk == nil {
+		return versionEntry{}, false
+	}
+	entry, ok := pk.Versions[version]
+	if !ok || len(entry.Maintainers) == 0 {
+		return versionEntry{}, false
+	}
+	return entry, true
 }
 
 type semver struct{ major, minor, patch int }

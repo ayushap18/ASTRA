@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/astra-security/astra/services/core/internal/model"
@@ -75,12 +76,65 @@ func command(ctx context.Context, dir string, limit int, extraHeader string, arg
 	return out.Bytes(), nil
 }
 
+// sourceFileLimit caps source files read for reachability. Repositories above it
+// are truncated, never rejected.
+const sourceFileLimit = 500
+
+// catFileBatch reads every blob in one `git cat-file --batch` process and returns
+// contents keyed by object id. Oversized or missing objects are simply absent.
+func catFileBatch(ctx context.Context, repo string, ids []string) (map[string][]byte, error) {
+	blobs := map[string][]byte{}
+	if len(ids) == 0 {
+		return blobs, nil
+	}
+	cmd := exec.CommandContext(ctx, "git", "cat-file", "--batch")
+	cmd.Dir = repo
+	cmd.Env = gitEnv(repo, "")
+	cmd.Stdin = strings.NewReader(strings.Join(ids, "\n") + "\n")
+	out := &limitedBuffer{limit: 24 * 1024 * 1024}
+	cmd.Stdout = out
+	cmd.Stderr = io.Discard
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("repository fetch/read failed (unavailable, unsupported, or resource limit)")
+	}
+	data := out.Bytes()
+	for len(data) > 0 {
+		newline := bytes.IndexByte(data, '\n')
+		if newline < 0 {
+			break
+		}
+		fields := strings.Fields(string(data[:newline]))
+		data = data[newline+1:]
+		if len(fields) != 3 {
+			continue // "<oid> missing"; the file is skipped.
+		}
+		size, err := strconv.Atoi(fields[2])
+		if err != nil || size < 0 || size > len(data) {
+			break
+		}
+		if fields[1] == "blob" {
+			blobs[fields[0]] = data[:size:size]
+		}
+		data = data[size:]
+		if len(data) > 0 && data[0] == '\n' {
+			data = data[1:]
+		}
+	}
+	return blobs, nil
+}
+
 func Fetch(ctx context.Context, input model.ScanInput) (model.ScanInput, error) {
 	repository, err := ValidateRepository(input.Repository)
 	if err != nil {
 		return input, err
 	}
-	header, err := AuthorizationHeader(input.GitHubToken)
+	token := input.GitHubToken
+	if token == "" {
+		// Server-side default. Unauthenticated GitHub allows 60 requests an hour
+		// and throttles clones; a token raises that and reaches private repos.
+		token = os.Getenv("GITHUB_TOKEN")
+	}
+	header, err := AuthorizationHeader(token)
 	if err != nil {
 		return input, err
 	}
@@ -114,32 +168,68 @@ func Fetch(ctx context.Context, input model.ScanInput) (model.ScanInput, error) 
 			selected = append(selected, blob{parts[2], file})
 		}
 	}
-	if len(selected) > 502 {
-		return input, fmt.Errorf("repository exceeds 500 supported source files")
+	// Large repositories are truncated rather than rejected: the manifest and
+	// lockfile always win a slot, and dropped files are reported as unknown
+	// reachability instead of failing the scan.
+	truncated := 0
+	if len(selected) > sourceFileLimit+2 {
+		kept := make([]blob, 0, sourceFileLimit+2)
+		for _, b := range selected {
+			if b.path == "package.json" || b.path == "package-lock.json" {
+				kept = append(kept, b)
+			}
+		}
+		for _, b := range selected {
+			if len(kept) >= sourceFileLimit+2 {
+				break
+			}
+			if b.path != "package.json" && b.path != "package-lock.json" {
+				kept = append(kept, b)
+			}
+		}
+		truncated = len(selected) - len(kept)
+		selected = kept
+	}
+	ids := make([]string, len(selected))
+	for i, b := range selected {
+		ids[i] = b.id
+	}
+	// One `cat-file --batch` instead of one process per blob: reading 500 files
+	// used to fork git 500 times.
+	blobs, err := catFileBatch(ctx, repo, ids)
+	if err != nil {
+		return input, err
 	}
 	input.Sources = map[string]string{}
 	total := 0
 	for _, b := range selected {
-		limit := 256 * 1024
-		if b.path == "package-lock.json" {
-			limit = 8 * 1024 * 1024
-		}
-		content, err := command(ctx, repo, limit, "", "cat-file", "blob", b.id)
-		if err != nil {
-			return input, err
-		}
+		content := blobs[b.id]
 		switch b.path {
 		case "package.json":
+			if len(content) > 256*1024 {
+				return input, fmt.Errorf("git output size limit exceeded")
+			}
 			input.Manifest = json.RawMessage(content)
 		case "package-lock.json":
+			if len(content) > 8*1024*1024 {
+				return input, fmt.Errorf("git output size limit exceeded")
+			}
 			input.Lockfile = json.RawMessage(content)
 		default:
-			total += len(content)
-			if total > 4*1024*1024 {
-				return input, fmt.Errorf("source budget exceeds 4 MiB")
+			if len(content) > 256*1024 {
+				truncated++
+				continue
 			}
+			if total+len(content) > 4*1024*1024 {
+				truncated++
+				continue
+			}
+			total += len(content)
 			input.Sources[b.path] = string(content)
 		}
+	}
+	if truncated > 0 {
+		input.SourceWarning = fmt.Sprintf("%d repository source files were not read (file count, file size, or the 4 MiB source budget); their imports remain unknown", truncated)
 	}
 	if len(input.Manifest) == 0 || len(input.Lockfile) == 0 {
 		return input, fmt.Errorf("repository root requires package.json and package-lock.json")

@@ -91,6 +91,7 @@ type ScanInput struct {
 	Lockfile       json.RawMessage   `json:"lockfile,omitempty"`
 	Sources        map[string]string `json:"sources,omitempty"`
 	GitHubToken    string            `json:"github_token,omitempty"`
+	SourceWarning  string            `json:"source_warning,omitempty"`
 	DeniedLicenses []string          `json:"denied_licenses,omitempty"`
 }
 type Event struct {

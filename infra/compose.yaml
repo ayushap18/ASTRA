@@ -22,7 +22,7 @@ services:
     environment:
       ASTRA_INTERNAL_TOKEN: ${ASTRA_INTERNAL_TOKEN:?Set ASTRA_INTERNAL_TOKEN in .env}
       SARVAM_API_KEY: ${SARVAM_API_KEY:-}
-      SARVAM_MODEL: ${SARVAM_MODEL:-sarvam-105b}
+      SARVAM_MODEL: ${SARVAM_MODEL:-sarvam-105b-conversations}
     read_only: true
     tmpfs: ["/tmp:size=32m"]
     cap_drop: [ALL]
@@ -46,6 +46,10 @@ services:
       DATABASE_URL: postgres://astra:${POSTGRES_PASSWORD}@postgres:5432/astra?sslmode=disable
       ASTRA_ENABLE_GITHUB: ${ASTRA_ENABLE_GITHUB:-false}
       ASTRA_ENABLE_DEMO: ${ASTRA_ENABLE_DEMO:-true}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      ASTRA_REGISTRY_WORKERS: ${ASTRA_REGISTRY_WORKERS:-16}
+      ASTRA_SCAN_TIMEOUT: ${ASTRA_SCAN_TIMEOUT:-5m}
+      ASTRA_FETCH_TIMEOUT: ${ASTRA_FETCH_TIMEOUT:-90s}
       ASTRA_SCAN_RETENTION_AGE: ${ASTRA_SCAN_RETENTION_AGE:-720h}
       ASTRA_SCAN_RETENTION_COUNT: ${ASTRA_SCAN_RETENTION_COUNT:-500}
     depends_on:
@@ -89,7 +93,7 @@ services:
       HOSTNAME: 0.0.0.0
       PORT: "3000"
       SARVAM_API_KEY: ${SARVAM_API_KEY:-}
-      SARVAM_MODEL: ${SARVAM_MODEL:-sarvam-105b}
+      SARVAM_MODEL: ${SARVAM_MODEL:-sarvam-105b-conversations}
     depends_on:
       core: {condition: service_started}
     read_only: true

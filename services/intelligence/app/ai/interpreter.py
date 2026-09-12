@@ -5,6 +5,22 @@ import httpx
 from app.models import ExplainRequest
 from app.risk.engine import analyze
 
+# Sarvam is instructed by language name: the bare ISO codes are ambiguous prose
+# ("or" reads as the English conjunction) and the model ignored them.
+LANGUAGE_NAMES = {
+    "en": "English",
+    "hi": "Hindi",
+    "bn": "Bengali",
+    "ta": "Tamil",
+    "te": "Telugu",
+    "mr": "Marathi",
+    "gu": "Gujarati",
+    "kn": "Kannada",
+    "ml": "Malayalam",
+    "pa": "Punjabi",
+    "or": "Odia",
+}
+
 
 async def explain(request: ExplainRequest) -> dict:
     package = next((p for p in request.graph.packages if p.id == request.package_id), None)
@@ -38,6 +54,7 @@ async def explain(request: ExplainRequest) -> dict:
         "ai_generated": False,
         "warnings": [],
     }
+    language_name = LANGUAGE_NAMES.get(request.language, "English")
     key = os.getenv("SARVAM_API_KEY")
     if not request.use_ai:
         if request.language != "en":
@@ -54,18 +71,22 @@ async def explain(request: ExplainRequest) -> dict:
                 "https://api.sarvam.ai/v1/chat/completions",
                 headers={"api-subscription-key": key},
                 json={
-                    "model": os.getenv("SARVAM_MODEL", "sarvam-105b"),
+                    # sarvam-105b spends the whole budget on hidden reasoning and
+                    # returns null content; the conversations variant answers directly.
+                    "model": os.getenv("SARVAM_MODEL", "sarvam-105b-conversations"),
                     "temperature": 0,
                     "max_tokens": 4000,
-                    # sarvam-105b reasons before answering; default effort exceeds the budget.
-                    "reasoning_effort": "low",
                     "messages": [
                         {
                             "role": "system",
                             "content": "Explain only the supplied security evidence. "
                             "Never invent a vulnerability, execution path, patch, or score. Distinguish unknown "
-                            "from safe. This is commentary on deterministic analysis. Reply in language "
-                            + request.language,
+                            "from safe. This is commentary on deterministic analysis. "
+                            "Write every sentence in "
+                            + language_name
+                            + ". Do not reply in English unless "
+                            + language_name
+                            + " is English.",
                         },
                         {"role": "user", "content": json.dumps(payload, sort_keys=True)},
                     ],

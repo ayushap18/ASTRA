@@ -1,6 +1,30 @@
 type Bar = { label: string; value: number };
 
-export function Donut({ value, label }: { value: number | null | undefined; label: string }) {
+// Charts draw from the block palette. `tone` names a fixed colour (severity, where
+// the colour carries meaning); otherwise bars cycle the palette so a long list of
+// kinds stays readable. Colour is never the only signal: every bar keeps its value.
+const PALETTE = ["lime", "lilac", "cream", "mint", "coral", "pink"] as const;
+const SEVERITY_TONE: Record<string, string> = {
+  critical: "coral",
+  high: "pink",
+  medium: "cream",
+  low: "mint",
+  unknown: "hairline",
+};
+
+function toneVar(tone: string) {
+  return tone === "hairline" ? "var(--hairline)" : `var(--block-${tone})`;
+}
+
+export function Donut({
+  value,
+  label,
+  tone = "lilac",
+}: {
+  value: number | null | undefined;
+  label: string;
+  tone?: string;
+}) {
   const unknown = value == null || Number.isNaN(value);
   const clamped = unknown ? 0 : Math.max(0, Math.min(100, value));
   const r = 42;
@@ -9,14 +33,14 @@ export function Donut({ value, label }: { value: number | null | undefined; labe
   return (
     <figure className="chart">
       <svg viewBox="0 0 120 120" width="140" height="140" aria-label={`${label} ${unknown ? "unknown" : clamped}`}>
-        <circle cx="60" cy="60" r={r} fill="none" stroke="var(--hairline)" strokeWidth="12" />
+        <circle cx="60" cy="60" r={r} fill="none" stroke="var(--hairline-soft)" strokeWidth="12" />
         {unknown ? null : (
           <circle
             cx="60"
             cy="60"
             r={r}
             fill="none"
-            stroke="currentColor"
+            stroke={toneVar(tone)}
             strokeWidth="12"
             strokeDasharray={`${dash} ${c}`}
             strokeLinecap="round"
@@ -32,21 +56,31 @@ export function Donut({ value, label }: { value: number | null | undefined; labe
   );
 }
 
-export function Bars({ title, items }: { title: string; items: Bar[] }) {
+export function Bars({ title, items, bySeverity }: { title: string; items: Bar[]; bySeverity?: boolean }) {
   const max = Math.max(1, ...items.map((item) => item.value));
   return (
     <figure className="chart">
       <figcaption className="caption">{title}</figcaption>
       <div className="bars">
-        {items.map((item) => (
-          <div key={item.label} className="bar-row">
-            <span className="caption">{item.label}</span>
-            <span className="bar-track">
-              <span className="bar-fill" style={{ width: `${(item.value / max) * 100}%` }} />
-            </span>
-            <span className="caption">{item.value}</span>
-          </div>
-        ))}
+        {items.map((item, index) => {
+          const tone = bySeverity
+            ? (SEVERITY_TONE[item.label.toLowerCase()] ?? "hairline")
+            : PALETTE[index % PALETTE.length];
+          return (
+            <div key={item.label} className="bar-row">
+              <span className="caption bar-label" title={item.label}>
+                {item.label}
+              </span>
+              <span className="bar-track">
+                <span
+                  className="bar-fill"
+                  style={{ width: `${(item.value / max) * 100}%`, background: toneVar(tone) }}
+                />
+              </span>
+              <span className="caption">{item.value}</span>
+            </div>
+          );
+        })}
       </div>
     </figure>
   );
@@ -64,8 +98,15 @@ export function Radar({ title, values }: { title: string; values: Record<string,
   return (
     <figure className="chart">
       <svg viewBox="0 0 120 120" width="180" height="180" aria-label={title}>
-        <circle cx="60" cy="60" r="40" fill="none" stroke="#e6e6e6" />
-        <polygon points={points.join(" ")} fill="rgba(0,0,0,0.12)" stroke="#000" />
+        <circle cx="60" cy="60" r="40" fill="none" stroke="var(--hairline)" />
+        <circle cx="60" cy="60" r="20" fill="none" stroke="var(--hairline-soft)" />
+        <polygon
+          points={points.join(" ")}
+          fill="var(--block-mint)"
+          fillOpacity="0.75"
+          stroke="var(--ink)"
+          strokeWidth="1.5"
+        />
       </svg>
       <figcaption className="caption">{title}</figcaption>
     </figure>

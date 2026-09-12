@@ -6,12 +6,12 @@ function Skeleton({ className, rows, ...props }: React.ComponentProps<"div"> & {
     return (
       <div className="stack" aria-hidden="true">
         {Array.from({ length: rows }, (_, i) => (
-          <div key={i} data-slot="skeleton" className={cn("h-4 animate-pulse rounded-md bg-muted", className)} />
+          <div key={i} data-slot="skeleton" className={cn("h-4 rounded-md bg-muted", className)} />
         ))}
       </div>
     );
   }
-  return <div data-slot="skeleton" className={cn("animate-pulse rounded-md bg-muted", className)} {...props} />;
+  return <div data-slot="skeleton" className={cn("rounded-md bg-muted", className)} {...props} />;
 }
 
 export { Skeleton };

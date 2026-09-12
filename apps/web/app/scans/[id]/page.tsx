@@ -63,12 +63,13 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
             </div>
           ) : null}
           <div className="chart-grid">
-            <Donut value={analysis?.trust} label="Trust" />
-            <Donut value={analysis?.risk} label="Risk" />
-            <Donut value={analysis?.confidence} label="Confidence" />
+            <Donut value={analysis?.trust} label="Trust" tone="mint" />
+            <Donut value={analysis?.risk} label="Risk" tone="coral" />
+            <Donut value={analysis?.confidence} label="Confidence" tone="lilac" />
             {Object.keys(radar).length ? <Radar title="Mean risk dimensions" values={radar} /> : null}
             <Bars
               title="Findings by severity"
+              bySeverity
               items={[...bySeverity.entries()].map(([label, value]) => ({ label, value }))}
             />
             <Bars title="Findings by kind" items={[...byKind.entries()].map(([label, value]) => ({ label, value }))} />

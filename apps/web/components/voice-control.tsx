@@ -217,6 +217,7 @@ export function VoiceControl({ scans }: { scans: ScanSummary[] }) {
     <div className="voice-control">
       <Button
         tone="magenta"
+        size="sm"
         className={state === "listening" ? "voice-pulse" : ""}
         aria-pressed={state === "listening"}
         aria-label="Hold to talk to Sarvam"
@@ -237,7 +238,7 @@ export function VoiceControl({ scans }: { scans: ScanSummary[] }) {
       </Button>
       <span className="caption">{label}</span>
       {result?.pendingRemediation ? (
-        <Button tone="secondary" onClick={confirm}>
+        <Button tone="secondary" size="sm" onClick={confirm}>
           Confirm {result.pendingRemediation} changes
         </Button>
       ) : null}

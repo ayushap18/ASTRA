@@ -1305,3 +1305,69 @@ select {
 .finding.sev-high .caption {
   font-weight: 700;
 }
+
+/* Collapsed warning list. <details> owns the state; this only styles the control. */
+.warnings {
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.warnings > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-height: 44px;
+  padding: 0 var(--space-md);
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--radius-md);
+}
+
+/* Safari draws its own triangle without this. */
+.warnings > summary::-webkit-details-marker {
+  display: none;
+}
+
+.warnings > summary:hover {
+  background: var(--surface-soft);
+}
+
+.warnings > summary:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* Chevron: points down when closed, up when open. */
+.warnings-marker {
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 140ms;
+}
+
+.warnings[open] > .warnings-marker,
+.warnings[open] > summary .warnings-marker {
+  transform: translateY(2px) rotate(-135deg);
+}
+
+.warnings .warning-list {
+  padding: var(--space-sm) var(--space-md) var(--space-md) calc(var(--space-md) + 18px);
+  border-top: 1px solid var(--hairline-soft);
+  max-height: 40vh;
+  /* Scroll at the panel edge; the text itself keeps a readable measure. */
+  max-width: none;
+}
+
+.warnings .warning-list li {
+  max-width: 72ch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .warnings-marker {
+    transition: none;
+  }
+}

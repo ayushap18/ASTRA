@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { GraphCanvas } from "@/components/graph-canvas";
+import { WarningList } from "@/components/warning-list";
 import { getGraph } from "@/lib/server";
 
 export default async function GraphPage({ params }: { params: Promise<{ id: string }> }) {
@@ -20,11 +21,7 @@ export default async function GraphPage({ params }: { params: Promise<{ id: stri
           <p className="body">Graph is not available yet.</p>
         ) : (
           <>
-            {graph.warnings.map((warning) => (
-              <p key={warning} className="caption">
-                {warning}
-              </p>
-            ))}
+            <WarningList warnings={graph.warnings} />
             <Suspense fallback={<p className="caption">Loading graph…</p>}>
               <GraphCanvas scanId={id} graph={graph} />
             </Suspense>

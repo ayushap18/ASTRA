@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Bars, Donut, Radar } from "@/components/charts";
 import { FindingList } from "@/components/finding-list";
+import { WarningList } from "@/components/warning-list";
 import { WorkbenchExport } from "@/components/workbench-export";
 import { metricLabel } from "@/lib/dashboard";
 import { getEvidence, getFindings, getGraph, getScan } from "@/lib/server";
@@ -52,11 +53,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
             <div className="stack">
               <p className="body">Partial: usable with gaps.</p>
               {graph?.warnings.length ? (
-                <ul className="warning-list">
-                  {graph.warnings.map((warning) => (
-                    <li key={warning}>{warning}</li>
-                  ))}
-                </ul>
+                <WarningList warnings={graph.warnings} />
               ) : (
                 <p className="body">Warnings are listed on Graph.</p>
               )}
